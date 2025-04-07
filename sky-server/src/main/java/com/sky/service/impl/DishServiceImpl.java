@@ -134,7 +134,7 @@ public class DishServiceImpl implements DishService {
             dishIds.add(id);
 
             List<Long> setmealIds = setmealDishMapper.getSetmealIdsByDishIds(dishIds);
-
+            //批量停售关联套餐
             if (setmealIds != null && setmealIds.size() > 0){
                 for (Long setmealId : setmealIds) {
                     Setmeal setmeal = Setmeal.builder()
@@ -145,6 +145,15 @@ public class DishServiceImpl implements DishService {
                 }
             }
         }
+    }
+
+    @Override
+    public List<Dish> getDishByCategory(Long categoryId) {
+        Dish dish = Dish.builder()
+                .categoryId(categoryId)
+                .status(StatusConstant.ENABLE)
+                .build();
+        return dishMapper.list(dish);
     }
 }
 
