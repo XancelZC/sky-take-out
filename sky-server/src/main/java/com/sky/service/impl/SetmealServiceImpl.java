@@ -10,6 +10,7 @@ import com.sky.entity.Dish;
 import com.sky.entity.Setmeal;
 import com.sky.entity.SetmealDish;
 import com.sky.exception.DeletionNotAllowedException;
+import com.sky.exception.SetmealEnableFailedException;
 import com.sky.mapper.DishMapper;
 import com.sky.mapper.SetmealDishMapper;
 import com.sky.mapper.SetmealMapper;
@@ -112,5 +113,35 @@ public class SetmealServiceImpl implements SetmealService {
         });
 
         setmealDishMapper.insertBatch(setmealDishes);
+    }
+
+    @Transactional
+    @Override
+    public void startOrStop(Integer status, Long id) {
+//        if (status == StatusConstant.ENABLE){
+//            List<SetmealDish> dishes = setmealDishMapper.getDishesBySetmealId(id);
+//            dishes.forEach(dish->{
+//                Long dishId = dish.getDishId();
+//                Dish dish1 = dishMapper.getById(dishId);
+//                if (dish1.getStatus() == StatusConstant.DISABLE)
+//                    throw new SetmealEnableFailedException(MessageConstant.SETMEAL_ENABLE_FAILED);
+//            });
+//        }
+        if (status == StatusConstant.ENABLE){
+            List<Dish> dishes = dishMapper.getDishesBySetmealId(id);
+            if (dishes != null && dishes.size() > 0){
+                dishes.forEach(dish -> {
+                    if (dish.getStatus() == StatusConstant.DISABLE){
+                        throw new SetmealEnableFailedException(MessageConstant.SETMEAL_ENABLE_FAILED);
+                    }
+                });
+            }
+        }
+
+        Setmeal setmeal = Setmeal.builder()
+                .status(status)
+                .id(id)
+                .build();
+        setmealMapper.update(setmeal);
     }
 }
