@@ -115,6 +115,13 @@ public class SetmealServiceImpl implements SetmealService {
         setmealDishMapper.insertBatch(setmealDishes);
     }
 
+    /**
+     * 注意这里的顺序，应该是先检验是不是禁用然后在更新
+     * 之前的菜品停售是先更新再停售相关联的套餐，是因为检验套餐的逻辑是根据菜品的状态来的，因此应该先更新
+     * 业务逻辑的重要性！
+     * @param status
+     * @param id
+     */
     @Transactional
     @Override
     public void startOrStop(Integer status, Long id) {
