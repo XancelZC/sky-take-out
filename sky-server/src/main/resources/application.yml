@@ -12,6 +12,11 @@ spring:
       url: jdbc:mysql://localhost:3306/sky_take_out
       username: root
       password: 1234
+  redis:
+    host: ${sky.redis.host}
+    port: ${sky.redis.port}
+    database: ${sky.redis.database}
+#    password: ${sky.redis.password}
 
 mybatis:
   #mapper配置文件
