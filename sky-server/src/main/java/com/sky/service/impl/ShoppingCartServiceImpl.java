@@ -76,4 +76,11 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 
         return shoppingCartMapper.list(shoppingCart);
     }
+
+    @Override
+    public void cleanShoppingCart() {
+        Long userId = BaseContext.getCurrentId();;
+        shoppingCartMapper.cleanShoppingCart(userId);
+    }
+
 }
