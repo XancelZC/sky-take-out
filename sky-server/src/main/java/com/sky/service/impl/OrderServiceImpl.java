@@ -44,6 +44,8 @@ public class OrderServiceImpl implements OrderService {
     private UserMapper userMapper;
     @Autowired
     private WeChatPayUtil weChatPayUtil;
+    @Autowired
+    private DishMapper dishMapper;
 
     @Transactional
     @Override
@@ -166,15 +168,22 @@ public class OrderServiceImpl implements OrderService {
         orderMapper.update(orders);
     }
 
+    /**
+     * 查询历史订单 （分页查询）
+     * @param page
+     * @param pageSize
+     * @param status
+     * @return
+     */
     @Override
     public PageResult listHistoryOrders(int page, int pageSize, Integer status){
 
+        //设置分页
         PageHelper.startPage(page,pageSize);
-
+        //DTO作用：在不同层之间传输数据
         OrdersPageQueryDTO ordersPageQueryDTO = new OrdersPageQueryDTO();
         ordersPageQueryDTO.setUserId(BaseContext.getCurrentId());
         ordersPageQueryDTO.setStatus(status);
-
 
         Page<Orders> page1 =  orderMapper.pageQuery(ordersPageQueryDTO);
 
@@ -186,14 +195,34 @@ public class OrderServiceImpl implements OrderService {
                 Long orderId = orders.getId();
 
                 List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(orderId);
-
+                //将查询到的order复制给vo 用来前端展示
                 OrderVO orderVO = new OrderVO();
                 BeanUtils.copyProperties(orders,orderVO);
                 orderVO.setOrderDetailList(orderDetailList);
-
+                //加入创建的vo集合
                 list.add(orderVO);
             }
         }
+        //注意分页查询的返回结果都是PageResult
         return new PageResult(page1.getTotal(),list);
+    }
+
+    /**
+     * 查询订单详情
+     * @param id
+     * @return
+     */
+    @Override
+    public OrderVO getOrderDetail(Long id) {
+
+        OrderVO orderVO = new OrderVO();
+
+        Orders order = orderMapper.getById(id);
+        List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(id);
+
+        BeanUtils.copyProperties(order,orderVO);
+        orderVO.setOrderDetailList(orderDetailList);
+
+        return orderVO;
     }
 }
