@@ -4,12 +4,14 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.sky.constant.MessageConstant;
+import com.sky.constant.StatusConstant;
 import com.sky.context.BaseContext;
 import com.sky.dto.OrdersPageQueryDTO;
 import com.sky.dto.OrdersPaymentDTO;
 import com.sky.dto.OrdersSubmitDTO;
 import com.sky.entity.*;
 import com.sky.exception.AddressBookBusinessException;
+import com.sky.exception.OrderBusinessException;
 import com.sky.exception.ShoppingCartBusinessException;
 import com.sky.mapper.*;
 import com.sky.result.PageResult;
@@ -224,5 +226,38 @@ public class OrderServiceImpl implements OrderService {
         orderVO.setOrderDetailList(orderDetailList);
 
         return orderVO;
+    }
+
+
+    @Override
+    public void cancel(Long id) throws Exception {
+        //获取order
+        Orders order = orderMapper.getById(id);
+        //处理异常情况
+        if (order == null){
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+        //1待付款 2待接单 3已接单 4派送中 5已完成 6已取消 7退款
+        //如果订单目前已经处于接单后的状态，取消订单需要联系商家处理
+        if (order.getStatus() > 2){
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+        //处理完异常情况后，正常情况：如果未付款 直接取消订单 如果已付款 需要进行退款处理
+
+        Orders orders = new Orders();
+        orders.setId(id);
+
+        //如果已付款 待接单 进行退款
+        if (order.getStatus().equals(Orders.TO_BE_CONFIRMED)){
+            //暂时没有微信商户号 故先注释
+//            weChatPayUtil.refund(order.getNumber(),order.getNumber(),order.getAmount(),order.getAmount());
+            orders.setPayStatus(Orders.REFUND);
+        }
+
+        orders.setStatus(Orders.CANCELLED);
+        orders.setCancelReason("用户取消");
+        orders.setCancelTime(LocalDateTime.now());
+
+        orderMapper.update(orders);
     }
 }

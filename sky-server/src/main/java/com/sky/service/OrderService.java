@@ -31,4 +31,6 @@ public interface OrderService {
      * @return
      */
     OrderVO getOrderDetail(Long id);
+
+    void cancel(Long id) throws Exception;
 }
