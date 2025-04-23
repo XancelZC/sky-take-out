@@ -29,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -49,6 +50,11 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private DishMapper dishMapper;
 
+    /**
+     * 提交订单
+     * @param ordersSubmitDTO
+     * @return
+     */
     @Transactional
     @Override
     public OrderSubmitVO submitOrder(OrdersSubmitDTO ordersSubmitDTO) {
@@ -228,18 +234,22 @@ public class OrderServiceImpl implements OrderService {
         return orderVO;
     }
 
-
+    /**
+     * 取消订单
+     * @param id
+     * @throws Exception
+     */
     @Override
     public void cancel(Long id) throws Exception {
         //获取order
-        Orders order = orderMapper.getById(id);
+        Orders orderDB= orderMapper.getById(id);
         //处理异常情况
-        if (order == null){
+        if (orderDB == null){
             throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
         }
         //1待付款 2待接单 3已接单 4派送中 5已完成 6已取消 7退款
         //如果订单目前已经处于接单后的状态，取消订单需要联系商家处理
-        if (order.getStatus() > 2){
+        if (orderDB.getStatus() > 2){
             throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
         }
         //处理完异常情况后，正常情况：如果未付款 直接取消订单 如果已付款 需要进行退款处理
@@ -248,7 +258,7 @@ public class OrderServiceImpl implements OrderService {
         orders.setId(id);
 
         //如果已付款 待接单 进行退款
-        if (order.getStatus().equals(Orders.TO_BE_CONFIRMED)){
+        if (orderDB.getStatus().equals(Orders.TO_BE_CONFIRMED)){
             //暂时没有微信商户号 故先注释
 //            weChatPayUtil.refund(order.getNumber(),order.getNumber(),order.getAmount(),order.getAmount());
             orders.setPayStatus(Orders.REFUND);
@@ -259,5 +269,30 @@ public class OrderServiceImpl implements OrderService {
         orders.setCancelTime(LocalDateTime.now());
 
         orderMapper.update(orders);
+    }
+
+    /**
+     * 再来一单
+     * @param id
+     */
+    @Override
+    public void repetition(Long id) {
+        //再来一单 首先根据id获取当前订单 然后将订单内的菜品加到购物车里
+
+        Long userId = BaseContext.getCurrentId();
+
+        List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(id);
+
+        //Java Stream流式处理
+        List<ShoppingCart> shoppingCartList = orderDetailList.stream().map(x -> {
+            ShoppingCart shoppingCart = new ShoppingCart();
+            //复制属性 排除id
+            BeanUtils.copyProperties(x, shoppingCart, "id");
+            shoppingCart.setUserId(userId);
+            shoppingCart.setCreateTime(LocalDateTime.now());
+            return shoppingCart;
+        }).collect(Collectors.toList());
+
+        shoppingCartMapper.insertBatch(shoppingCartList);
     }
 }
