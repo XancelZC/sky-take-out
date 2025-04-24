@@ -38,11 +38,9 @@ public class OrderController {
 
     @GetMapping("/details/{id}")
     @ApiOperation("查询订单详情")
-    public Result<OrdersDTO> getDetailsById(@PathVariable Long id){
-        log.info("查询订单详情");
-        OrdersDTO ordersDTO = new OrdersDTO();
-        Orders orders = orderService.getOrderDetail(id);
-        BeanUtils.copyProperties(orders,ordersDTO);
-        return Result.success(ordersDTO);
+    public Result<OrderVO> getDetailsById(@PathVariable Long id){
+        log.info("查询订单详情：{}",id);
+       OrderVO orderVO = orderService.getOrderDetail(id);
+        return Result.success(orderVO);
     }
 }

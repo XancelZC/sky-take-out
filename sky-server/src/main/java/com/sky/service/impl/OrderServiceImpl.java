@@ -230,6 +230,13 @@ public class OrderServiceImpl implements OrderService {
 
         BeanUtils.copyProperties(order,orderVO);
         orderVO.setOrderDetailList(orderDetailList);
+        //得到菜品信息字符串
+        List<String> orderDishList = orderDetailList.stream().map(x -> {
+            String orderDish = x.getName() + "*" + x.getNumber() + ";";
+            return orderDish;
+        }).collect(Collectors.toList());
+        String orderDishString = String.join("", orderDishList);
+        orderVO.setOrderDishes(orderDishString);
 
         return orderVO;
     }
@@ -311,14 +318,14 @@ public class OrderServiceImpl implements OrderService {
 
                 BeanUtils.copyProperties(orders,orderVO);
                 //得到菜品信息字符串
-                List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(orders.getId());
-                List<String> orderDishList = orderDetailList.stream().map(x -> {
-                    String orderDish = x.getName() + "*" + x.getNumber() + ";";
-                    return orderDish;
-                }).collect(Collectors.toList());
-                String orderDishString = String.join("", orderDishList);
-
-                orderVO.setOrderDishes(orderDishString);
+//                List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(orders.getId());
+//                List<String> orderDishList = orderDetailList.stream().map(x -> {
+//                    String orderDish = x.getName() + "*" + x.getNumber() + ";";
+//                    return orderDish;
+//                }).collect(Collectors.toList());
+//                String orderDishString = String.join("", orderDishList);
+//
+//                orderVO.setOrderDishes(orderDishString);
                 orderVOList.add(orderVO);
             }
         }
