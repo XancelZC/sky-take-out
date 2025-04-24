@@ -295,4 +295,33 @@ public class OrderServiceImpl implements OrderService {
 
         shoppingCartMapper.insertBatch(shoppingCartList);
     }
+
+    @Override
+    public PageResult conditionSearch(OrdersPageQueryDTO ordersPageQueryDTO) {
+        PageHelper.startPage(ordersPageQueryDTO.getPage(),ordersPageQueryDTO.getPageSize());
+
+        Page<Orders> page = orderMapper.pageQuery(ordersPageQueryDTO);
+        List<Orders> ordersList = page.getResult();
+
+        List<OrderVO> orderVOList = new ArrayList<>();
+
+        if (!ordersList.isEmpty()){
+            for (Orders orders : ordersList) {
+                OrderVO orderVO = new OrderVO();
+
+                BeanUtils.copyProperties(orders,orderVO);
+                //得到菜品信息字符串
+                List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(orders.getId());
+                List<String> orderDishList = orderDetailList.stream().map(x -> {
+                    String orderDish = x.getName() + "*" + x.getNumber() + ";";
+                    return orderDish;
+                }).collect(Collectors.toList());
+                String orderDishString = String.join("", orderDishList);
+
+                orderVO.setOrderDishes(orderDishString);
+                orderVOList.add(orderVO);
+            }
+        }
+        return new PageResult(page.getTotal(),orderVOList);
+    }
 }
