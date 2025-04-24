@@ -6,6 +6,7 @@ import com.github.pagehelper.PageHelper;
 import com.sky.constant.MessageConstant;
 import com.sky.constant.StatusConstant;
 import com.sky.context.BaseContext;
+import com.sky.dto.OrdersConfirmDTO;
 import com.sky.dto.OrdersPageQueryDTO;
 import com.sky.dto.OrdersPaymentDTO;
 import com.sky.dto.OrdersSubmitDTO;
@@ -356,5 +357,29 @@ OrderServiceImpl implements OrderService {
         orderStatisticsVO.setToBeConfirmed(toBeConfirmed);
 
         return orderStatisticsVO;
+    }
+
+    /**
+     * 接单
+     * @param ordersConfirmDTO
+     */
+    @Override
+    public void confirm(OrdersConfirmDTO ordersConfirmDTO) {
+
+//        Long id = ordersConfirmDTO.getId();
+//        Orders orders = orderMapper.getById(id);
+//        orders.setStatus(Orders.CONFIRMED);
+//        orderMapper.update(orders);
+
+        /**
+         *上下这两种方式的区别在于 上面的传入sql的参数是全参 原因是我获取的是order对象 带有全值的
+         *                      下面的传入sql的自由status 应为builder构建的只有这个参数
+         */
+
+        Orders order = Orders.builder()
+                .id(ordersConfirmDTO.getId())
+                .status(Orders.CONFIRMED)
+                .build();
+        orderMapper.update(order);
     }
 }
