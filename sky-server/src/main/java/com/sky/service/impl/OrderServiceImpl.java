@@ -6,10 +6,7 @@ import com.github.pagehelper.PageHelper;
 import com.sky.constant.MessageConstant;
 import com.sky.constant.StatusConstant;
 import com.sky.context.BaseContext;
-import com.sky.dto.OrdersConfirmDTO;
-import com.sky.dto.OrdersPageQueryDTO;
-import com.sky.dto.OrdersPaymentDTO;
-import com.sky.dto.OrdersSubmitDTO;
+import com.sky.dto.*;
 import com.sky.entity.*;
 import com.sky.exception.AddressBookBusinessException;
 import com.sky.exception.OrderBusinessException;
@@ -380,6 +377,33 @@ OrderServiceImpl implements OrderService {
                 .id(ordersConfirmDTO.getId())
                 .status(Orders.CONFIRMED)
                 .build();
+        orderMapper.update(order);
+    }
+
+    @Override
+    public void rejection(OrdersRejectionDTO ordersRejectionDTO) throws Exception {
+        /**
+         * - 商家拒单其实就是将订单状态修改为“已取消”
+         * - 只有订单处于“待接单”状态时可以执行拒单操作
+         * - 商家拒单时需要指定拒单原因
+         * - 商家拒单时，如果用户已经完成了支付，需要为用户退款
+         */
+        Orders ordersDB = orderMapper.getById(ordersRejectionDTO.getId());
+        if (ordersDB == null || !ordersDB.getStatus().equals(Orders.TO_BE_CONFIRMED)){
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+
+        Orders order = Orders.builder()
+                .id(ordersRejectionDTO.getId())
+                .rejectionReason(ordersRejectionDTO.getRejectionReason())
+                .status(Orders.CANCELLED)
+                .cancelTime(LocalDateTime.now())
+                .build();
+        if (ordersDB.getPayStatus().equals(Orders.PAID)){
+            //暂时没有商户号 故先注释
+//          weChatPayUtil.refund(ordersDB.getNumber(),ordersDB.getNumber(),ordersDB.getAmount(),ordersDB.getAmount());
+            order.setPayStatus(Orders.REFUND);
+        }
         orderMapper.update(order);
     }
 }

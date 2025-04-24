@@ -3,6 +3,7 @@ package com.sky.controller.admin;
 import com.sky.dto.OrdersConfirmDTO;
 import com.sky.dto.OrdersDTO;
 import com.sky.dto.OrdersPageQueryDTO;
+import com.sky.dto.OrdersRejectionDTO;
 import com.sky.entity.Orders;
 import com.sky.mapper.OrderMapper;
 import com.sky.result.PageResult;
@@ -63,11 +64,26 @@ public class OrderController {
     }
 
     //接单  根据id获取订单后 将订单状态设置为已接单
+
+    /**
+     * 接单
+     * @param ordersConfirmDTO
+     * @return
+     */
     @PutMapping ("/confirm")
     @ApiOperation("接单")
     public Result confirm(@RequestBody OrdersConfirmDTO ordersConfirmDTO){
         log.info("接单");
         orderService.confirm(ordersConfirmDTO);
+        return Result.success();
+    }
+
+    //拒单 rejection
+    @PutMapping("/rejection")
+    @ApiOperation("拒单")
+    public Result rejection(@RequestBody OrdersRejectionDTO ordersRejectionDTO) throws Exception {
+        log.info("拒单");
+        orderService.rejection(ordersRejectionDTO);
         return Result.success();
     }
 }
