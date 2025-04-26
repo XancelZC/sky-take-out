@@ -427,5 +427,25 @@ OrderServiceImpl implements OrderService {
         orderMapper.update(order);
     }
 
+    /**
+     * 派送订单
+     * @param id
+     */
+    @Override
+    public void delivery(Long id) {
+        //派送订单
+        Orders orderDB = orderMapper.getById(id);
+        if (orderDB == null || !orderDB.getStatus().equals(Orders.CONFIRMED)){
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+        Orders order = Orders.builder()
+                .id(id)
+                .status(Orders.DELIVERY_IN_PROGRESS)
+                .deliveryStatus(1)
+                .deliveryTime(LocalDateTime.now().plusHours(1))
+                .build();
+        orderMapper.update(order);
+    }
+
 
 }

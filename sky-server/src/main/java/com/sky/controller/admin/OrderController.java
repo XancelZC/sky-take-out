@@ -60,8 +60,6 @@ public class OrderController {
         return Result.success(orderVO);
     }
 
-    //接单  根据id获取订单后 将订单状态设置为已接单
-
     /**
      * 接单
      * @param ordersConfirmDTO
@@ -75,7 +73,12 @@ public class OrderController {
         return Result.success();
     }
 
-    //拒单 rejection
+    /**
+     *  拒单 rejection
+     * @param ordersRejectionDTO
+     * @return
+     * @throws Exception
+     */
     @PutMapping("/rejection")
     @ApiOperation("拒单")
     public Result rejection(@RequestBody OrdersRejectionDTO ordersRejectionDTO) throws Exception {
@@ -84,7 +87,11 @@ public class OrderController {
         return Result.success();
     }
 
-    //取消订单
+    /**
+     *   取消订单
+     * @param ordersCancelDTO
+     * @return
+     */
     @PutMapping("/cancel")
     @ApiOperation("取消订单")
     public Result adminCancel(@RequestBody OrdersCancelDTO ordersCancelDTO){
@@ -92,4 +99,19 @@ public class OrderController {
         orderService.adminCancel(ordersCancelDTO);
         return Result.success();
     }
+
+    /**
+     * 派送订单 delivery/{id}
+     * @param id
+     * @return
+     */
+    @PutMapping("/delivery/{id}")
+    @ApiOperation("派送订单")
+    public Result deliver(@PathVariable Long id){
+        log.info("派送订单");
+        orderService.delivery(id);
+        return Result.success();
+    }
+
+
 }
