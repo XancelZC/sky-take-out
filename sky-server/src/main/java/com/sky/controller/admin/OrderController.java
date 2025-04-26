@@ -11,6 +11,7 @@ import com.sky.vo.OrderVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.xmlbeans.impl.xb.xsdschema.Public;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -113,5 +114,16 @@ public class OrderController {
         return Result.success();
     }
 
-
+    /**
+     * 完成订单 complete/{id}
+     * @param id
+     * @return
+     */
+    @PutMapping("/complete/{id}")
+    @ApiOperation("完成订单")
+    public Result complete(@PathVariable Long id){
+        log.info("完成订单");
+        orderService.complete(id);
+        return Result.success();
+    }
 }
