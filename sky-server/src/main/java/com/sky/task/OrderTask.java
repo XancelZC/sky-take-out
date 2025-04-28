@@ -18,7 +18,7 @@ public class OrderTask {
     private OrderMapper orderMapper;
 
     /**
-     * 处理超时订单 每分钟执行一次
+     * 处理超时订单 每分钟执行一次 如果有超过15分钟未付款的订单 就取消
      */
     @Scheduled(cron = "0 * * * * ?")
     public void processTimeoutOrder(){
@@ -38,6 +38,9 @@ public class OrderTask {
         }
     }
 
+    /**
+     * 统一在晚上1点 处理在派送中的订单为已完成
+     */
     @Scheduled(cron = "0 0 1 * * ?")
     public void processDeliveryOrder(){
         log.info("定时处理派送中的订单");
